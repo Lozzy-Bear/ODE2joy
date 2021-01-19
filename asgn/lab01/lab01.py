@@ -133,29 +133,30 @@ def bifurcation_tent_map():
     above 180,000 were set to 180,000, and then the entire image was normalized to 0-255.
     """
     px = 1000
-    stabilize = 1000
+    n = 101000
     max_intensity = 180000.0
-    u = np.linspace(1.0, 2.0, px)
-    x = np.linspace(0.0, 1.0, px)
-    x = np.zeros_like(u)
-    x[0] = 0.25
-    uu, xx = np.meshgrid(u, x)
+    ubins = np.linspace(1.0, 2.0, px)
+    xbins = np.linspace(0.0, 1.0, px+1)
+    x = np.zeros((n, len(ubins)))
+    x[0, :] = 0.25
     img = np.zeros((px, px))
 
     for j in range(0, n-1, 1):
-        x[j + 1, :] = u[:] * np.where(x[j, :] < 0.5, x[j, :], 1 - x[j, :])
+        x[j + 1, :] = ubins[:] * np.where(x[j, :] < 0.5, x[j, :], 1 - x[j, :])
 
     # Even out intensities; multiply by non-zero pixels in column (u)
+    x = x[999:-1, :]
     for i in range(img.shape[0]):
+        img[i, :] = np.histogram(x[:, i], bins=xbins, density=False)[0]
         img[i, :] *= np.count_nonzero(img[i, :])
 
     # Set the maximum value to 180,000 and normalize to 0 - 255
     img = np.where(img > max_intensity, max_intensity, img)
-    img = img / max_intensity * 255
+    img = np.round(255 * img / np.amax(img))
 
     # Plot the result
     plt.figure()
-    plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.imshow(np.flip(img.T, axis=0), cmap='Greys', vmin=0, vmax=255, extent=[1.0, 2.0, 0.0, 1.0])
     plt.title('Bifurcation Tent Map Q2.C')
     plt.xlabel('[u] value')
     plt.ylabel('[x] value')
@@ -174,7 +175,7 @@ if __name__ == '__main__':
     #arr_logistic_map(dr)
     #leg_logistic_map(np.array([1.5, 2.9, 3.5, 3.8]), 0.5, 100)
     #tent_map(du)
-    bifurcation_tent_map()
+    #bifurcation_tent_map()
     """
     Values 4, 3.5, 3
     
