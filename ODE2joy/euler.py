@@ -14,32 +14,3 @@ def mv_euler_method(f, r0, t0, tf, dt):
         x[idx + 1] = x[idx] + kx*dt
         y[idx + 1] = y[idx] + ky*dt
     return t, x, y
-
-
-def arr_logistic_map(ri, rf, dr, xi, n):
-    timer = time.time()
-    r = np.arange(ri, rf+dr, dr)
-    n = np.arange(n)
-    x = np.zeros((len(n), len(r)))
-    x[0, :] = xi
-    for j in n[0:-1]:
-        x[j + 1, :] = r[:] * x[j, :] * (1 - x[j, :])
-    print(f'Processing time: {time.time() - timer} [s]')
-
-    plt.figure(2)
-    legend = []
-    for i in range(x.shape[1]):
-        plt.plot(n, x[:, i])
-        legend.append(f'r = {r[i]}')
-        plt.legend(f'r = {i}')
-    plt.title('Slow Logistics Map Q1.B)')
-    plt.xlabel('Iterations')
-    plt.ylabel('x[n] Value')
-    plt.legend(legend)
-    #for i in range(x.shape[1]):
-    #    plt.plot(r, x[:, i])
-    #    legend.append(f'r = {r[i]}')
-    #    plt.legend(f'r = {i}')
-
-    #plt.legend(legend)
-    return x, n
