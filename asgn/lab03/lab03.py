@@ -205,23 +205,24 @@ if __name__ == '__main__':
     # plt.show()
 
     # Question 3
-    # f = non_linear_ode
-    # t0 = 0.1
-    # tf = 30
-    # dt = 0.001
-    # kappa = 1
-    # ta = np.arange(t0, tf, dt)
-    # xa = np.sin(np.sqrt(kappa)*ta**2)
-    # va = 2 * np.sqrt(kappa)*ta*np.cos(np.sqrt(kappa)*ta**2)
-    # r0 = [xa[0], va[0]]
-    # t, r = rk4(f, r0, t0, tf, dt)
-    # plt.figure()
-    # plt.plot(ta, va, '--')
-    # plt.plot(t, r[1])
-    # plt.title('Analytical vs. RK4 Solution for dt=0.001')
-    # plt.xlabel('Time [s]')
-    # plt.ylabel('v(t)')
-    # plt.legend(['Analytical', 'RK4'])
+    f = non_linear_ode
+    t0 = 0.1
+    tf = 30
+    dt = 0.001
+    kappa = 1
+    ta = np.arange(t0, tf, dt)
+    xa = np.sin(np.sqrt(kappa)*ta**2)
+    va = 2 * np.sqrt(kappa)*ta*np.cos(np.sqrt(kappa)*ta**2)
+    r0 = [xa[0], va[0]]
+    t, r = rk4(f, r0, t0, tf, dt)
+    plt.figure()
+    plt.plot(ta, va, '--')
+    plt.plot(t, r[1])
+    plt.title('Analytical vs. RK4 Solution for dt=0.001')
+    plt.xlabel('Time [s]')
+    plt.ylabel('v(t)')
+    plt.legend(['Analytical', 'RK4'])
+    plt.show()
     # plt.savefig('q3b_nonlinear.png')
     #
     # f = non_linear_ode
