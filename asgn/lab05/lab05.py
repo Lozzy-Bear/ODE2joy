@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.signal as sig
 
 
 # class example Leap Frog
@@ -97,9 +98,9 @@ def crystalline(r, t):
 
 
 def crystalline_atomic(r, t):
-    k = 10
+    k = 1
     m = 1
-    a = 1000
+    a = 10
     n = int(len(r)/2)
     x = np.zeros(n+2)
     x[1:-1] = r[:n]
@@ -111,13 +112,14 @@ def crystalline_atomic(r, t):
 
 def total_energy(k, m, x, v):
     kinetic = np.sum(0.5 * m * v**2, axis=0)
-    potential = np.zeros_like(x)
+    potential = np.zeros((101, 100000))
     potential[0, :] = 0.5 * k * x[0, :] ** 2
     potential[-1, :] = 0.5 * k * x[-1, :] ** 2
-    for i in range(1, x.shape[0]-1, 1):
-        potential[i, :] = 0.5 * k * (x[i+1, :] - x[i, :])**2
+    for i in range(1, 99+1, 1):
+        potential[i, :] = 0.5 * k * (x[i, :] - x[i-1, :])**2
     potential = np.sum(potential, axis=0)
-    return kinetic + potential
+    total = kinetic + potential
+    return total
 
 
 def plot_it(t, r, n, w0, name):
@@ -132,18 +134,19 @@ def plot_it(t, r, n, w0, name):
     plt.xlabel("Time")
     plt.ylabel("Mass Number")
     
-    fft = np.fft.fft(r[0])
-    freq = np.fft.fftfreq(len(r[0]), dt)
-    fft = np.fft.fftshift(fft)
-    freq = np.fft.fftshift(freq)
+    fft = np.fft.rfft(r[0])
+    freq = np.fft.rfftfreq(len(r[0]), dt)
+    #fft = np.fft.fftshift(fft)
+    #freq = np.fft.fftshift(freq)
     fft = np.abs(fft)
     freq = freq * 2 * np.pi
+    w = 2 * w0 * np.sin(np.arange(0, n+1, 1) * np.pi / 2 / (n + 1))
+    idx = np.zeros_like(w, dtype=np.int64)
+    for i, _ in enumerate(idx):
+        idx[i] = (np.abs(freq - w[i])).argmin()
     plt.subplot(313)
     plt.plot(freq, fft, 'm')
-    top = np.max(np.abs(fft))
-    for l in range(0, masses+1, 1):
-        w = 2*w0*np.sin(l*np.pi/2/(masses+1))
-        plt.plot([w, w], [0, top], 'k')
+    plt.stem(w, fft[idx], 'k:', 'ko', 'k--')
     plt.xlim(0, 2)
     plt.xlabel('Frequency, ω [rad/s]')
     plt.ylabel('Amplitude')
@@ -222,42 +225,42 @@ if __name__ == '__main__':
     # plot_it(t, r, masses, np.sqrt(k/m), 'q2d.png')
 
     # Question 2f
-    masses = 100
-    x0 = np.zeros(masses)
-    v0 = np.zeros_like(x0)
-    r0 = np.concatenate((x0, v0))
-    r0[0] = 0.5
-    t0 = 0
-    tf = 10_000
-    dt = 0.1
-    k = 1
-    m = 1
-    tl, rl = leapfrog(crystalline, r0, t0, tf, dt)
-    tr, rr = rk4(crystalline, r0, t0, tf, dt)
-    el = total_energy(k, m, rl[:masses, :], rl[masses:, :])
-    er = total_energy(k, m, rr[:masses, :], rr[masses:, :])
-    plt.figure()
-    plt.plot(tl, el, '--m', label='Leapfrog Method')
-    plt.plot(tr, er, '--c', label='Runge-Kutta 4 Method')
-    plt.xlabel('Time [s]')
-    plt.ylabel('Energy [J]')
-    plt.title('Energy Conserved')
-    plt.legend(loc='best')
-    plt.savefig('q2f_energy.png')
-    plt.show()
-
-    # Question 2g
     # masses = 100
     # x0 = np.zeros(masses)
     # v0 = np.zeros_like(x0)
     # r0 = np.concatenate((x0, v0))
     # r0[0] = 0.5
     # t0 = 0
-    # tf = 1000
-    # dt = 0.01
-    # k = 10
+    # tf = 10_000
+    # dt = 0.1
+    # k = 1
     # m = 1
-    # t, r = leapfrog(crystalline_atomic, r0, t0, tf, dt)
-    # plot_it(t, r, masses, np.sqrt(k/m), 'q2g_k10a1000.png')
+    # tl, rl = leapfrog(crystalline, r0, t0, tf, dt)
+    # tr, rr = rk4(crystalline, r0, t0, tf, dt)
+    # el = total_energy(k, m, rl[:masses, :], rl[masses:, :])
+    # er = total_energy(k, m, rr[:masses, :], rr[masses:, :])
+    # plt.figure()
+    # plt.plot(tl, el, '--m', label='Leapfrog Method')
+    # plt.plot(tr, er, '--c', label='Runge-Kutta 4 Method')
+    # plt.xlabel('Time [s]')
+    # plt.ylabel('Energy [J]')
+    # plt.title('Energy Conserved')
+    # plt.legend(loc='best')
+    # plt.ylim(0.20, 0.30)
+    # plt.savefig('q2f_energy.png')
+
+    # Question 2g
+    masses = 100
+    x0 = np.zeros(masses)
+    v0 = np.zeros_like(x0)
+    r0 = np.concatenate((x0, v0))
+    r0[0] = 0.5
+    t0 = 0
+    tf = 1000
+    dt = 0.01
+    k = 1
+    m = 1
+    t, r = leapfrog(crystalline_atomic, r0, t0, tf, dt)
+    plot_it(t, r, masses, np.sqrt(k/m), 'q2g_a10.png')
 
     plt.show()
