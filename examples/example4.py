@@ -19,7 +19,7 @@ def leapfrog(f, r0, t0, tf, dt):
     k = f(r[:, 0], t[0])
     m[:, 0] = r0 + 0.5*dt*k  # may need transpose k
     for i in range(1, len(t)+1, 1):
-        k = f(r[:, i], t[i] + 0.5*dt)
+        k = f(m[:, i], t[i] + 0.5*dt)
         r[:, i+1] = r[:, i] + dt*k
         k = f(r[:, i+1], t[i] + dt)
         m[:, i+1] = m[:, i] + dt*k

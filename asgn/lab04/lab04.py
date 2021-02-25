@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.integrate import ode
-
+from scipy.optimize import curve_fit
 
 
 def rk4_adaptive(f, r0, t0, tf, tol):
@@ -60,8 +60,6 @@ def rk4_adaptive(f, r0, t0, tf, tol):
         # Check the accuracy
         a = np.sqrt(x1[0] ** 2 + x1[1] ** 2 + x1[2] ** 2)
         b = np.sqrt(x2[0] ** 2 + x2[1] ** 2 + x2[2] ** 2)
-        # a = x1[0]
-        # b = x2[0]
         rho = 30 * tol * dt / np.abs(a - b)
         # Decrease dt
         if rho < 1:
@@ -207,7 +205,7 @@ def set_axes_equal(ax):
 
 
 def fit_func(x, a, b, c):
-    return a*x**2 + b*x + c
+    return a*np.exp(x*b) + c
 
 
 if __name__ == '__main__':
@@ -255,98 +253,101 @@ if __name__ == '__main__':
     # plt.show()
 
     # Question 3
-    f = orbital_motion
-    r0 = [500+6378, 0, 0, 0, 10, 0, 2000]
-    t0 = 0
-    tf = 700*60
-    tol = 1e-7
-    #t, r, steps = rk4_adaptive(f, r0, t0, tf, tol)
-    t1, r1, steps1 = rk4_adaptive(orbital_motion, r0, t0, tf, tol)
-    r0 = r1[:, -1]
-    r0[5] = 2
-    t2, r2, steps2 = rk4_adaptive(orbital_motion, r0, t1[-1], t1[-1] + tf*5, tol)
-    t = np.append(t1, t2)
-    r = np.append(r1, r2, axis=1)
-    steps = np.append(steps1, steps2)
-
-    print(len(t))
-
-    fig = plt.figure(figsize=[12, 10])
-
-    ax1 = fig.add_subplot(2, 2, 1)
-    earth = plt.Circle((0, 0), 6378, color='g')
-    ax1.add_patch(earth)
-    ax1.plot(r[0], r[1], 'k')
-    ax1.axis('equal')
-    ax1.set_title('Molniya Orbital Motion')
-    ax1.set_xlabel('[km]')
-    ax1.set_ylabel('[km]')
-    plt.ticklabel_format(axis="both", style="sci", scilimits=(0, 0))
-
-    ax2 = fig.add_subplot(2, 2, 3)
-    ax2.plot(np.sqrt(r[0]**2 + r[1]**2) - 6378, steps)
-    ax2.set_title('Time step vs. Altitude')
-    ax2.set_xlabel('Altitude [km]')
-    ax2.set_ylabel('Time Step [s]')
-    plt.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
-
-    ax3 = fig.add_subplot(2, 2, 4)
-    ax3.plot(t, np.sqrt(r[0]**2 + r[1]**2) - 6378)
-    ax3.set_title('Altitude vs. Time')
-    ax3.set_xlabel('Time [s]')
-    ax3.set_ylabel('Altitude [km]')
-    plt.ticklabel_format(axis="both", style="sci", scilimits=(0, 0))
-
-    ax4 = fig.add_subplot(2, 2, 2, projection='3d')
-    u = np.linspace(0, 2 * np.pi, 100)
-    v = np.linspace(0, np.pi, 100)
-    x = 6378 * np.outer(np.cos(u), np.sin(v))
-    y = 6378 * np.outer(np.sin(u), np.sin(v))
-    z = 6378 * np.outer(np.ones(np.size(u)), np.cos(v))
-    ax4.plot(r[0], r[1], r[2], 'k')
-    ax4.plot_surface(x, y, z, color='g')
-    ax4.set_title('Molniya Orbital Motion 3D')
-    ax4.set_xlabel('[km]')
-    ax4.set_ylabel('[km]')
-    ax4.set_zlabel('[km]')
-    set_axes_equal(ax4)
-
-    plt.savefig('q3c_plane_change.png')
-    plt.show()
-
-    # Question 3.d
     # f = orbital_motion
+    # r0 = [500+6378, 0, 0, 0, 10, 0, 2000]
     # t0 = 0
-    # tf = 5*700*60
+    # tf = 700*60
     # tol = 1e-7
+    # #t, r, steps = rk4_adaptive(f, r0, t0, tf, tol)
+    # t1, r1, steps1 = rk4_adaptive(orbital_motion, r0, t0, tf, tol)
+    # r0 = r1[:, -1]
+    # r0[5] = 2
+    # t2, r2, steps2 = rk4_adaptive(orbital_motion, r0, t1[-1], t1[-1] + tf*5, tol)
+    # t = np.append(t1, t2)
+    # r = np.append(r1, r2, axis=1)
+    # steps = np.append(steps1, steps2)
     #
-    # fig = plt.figure(figsize=[12, 5])
-    # ax1 = fig.add_subplot(1, 2, 1)
+    # print(len(t))
+    #
+    # fig = plt.figure(figsize=[12, 10])
+    #
+    # ax1 = fig.add_subplot(2, 2, 1)
     # earth = plt.Circle((0, 0), 6378, color='g')
     # ax1.add_patch(earth)
+    # ax1.plot(r[0], r[1], 'k')
     # ax1.axis('equal')
     # ax1.set_title('Molniya Orbital Motion')
     # ax1.set_xlabel('[km]')
     # ax1.set_ylabel('[km]')
     # plt.ticklabel_format(axis="both", style="sci", scilimits=(0, 0))
     #
-    # ax2 = fig.add_subplot(1, 2, 2)
-    # #ax2.axis('equal')
-    # ax2.set_title('Molniya Orbital Motion')
-    # ax2.set_xlabel('Pergigee Velocity [km/s]')
-    # ax2.set_ylabel('Apogee Altitude [km]')
-    # plt.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
+    # ax2 = fig.add_subplot(2, 2, 3)
+    # ax2.plot(np.sqrt(r[0]**2 + r[1]**2) - 6378, steps)
+    # ax2.set_title('Time step vs. Altitude')
+    # ax2.set_xlabel('Altitude [km]')
+    # ax2.set_ylabel('Time Step [s]')
+    # plt.ticklabel_format(axis="x", style="sci", scilimits=(0, 0))
     #
-    # vels = np.arange(8.0, 10.5 + 0.1, 0.1)
-    # alts = np.zeros_like(vels)
-    # for i in range(len(vels)):
-    #     r0 = [500 + 6378, 0, 0, 0, vels[i], 0, 2000]
-    #     t, r, steps = rk4_adaptive(f, r0, t0, tf, tol)
-    #     result = np.min(r[0])
-    #     alts[i] = np.abs(result) - 6378
-    #     ax1.plot(r[0], r[1])
-    #     ax1.scatter(result, 0)
+    # ax3 = fig.add_subplot(2, 2, 4)
+    # ax3.plot(t, np.sqrt(r[0]**2 + r[1]**2) - 6378)
+    # ax3.set_title('Altitude vs. Time')
+    # ax3.set_xlabel('Time [s]')
+    # ax3.set_ylabel('Altitude [km]')
+    # plt.ticklabel_format(axis="both", style="sci", scilimits=(0, 0))
     #
-    # ax2.plot(vels, alts, 'b', label='')
-    # plt.savefig('q3d_pergiapo.png')
+    # ax4 = fig.add_subplot(2, 2, 2, projection='3d')
+    # u = np.linspace(0, 2 * np.pi, 100)
+    # v = np.linspace(0, np.pi, 100)
+    # x = 6378 * np.outer(np.cos(u), np.sin(v))
+    # y = 6378 * np.outer(np.sin(u), np.sin(v))
+    # z = 6378 * np.outer(np.ones(np.size(u)), np.cos(v))
+    # ax4.plot(r[0], r[1], r[2], 'k')
+    # ax4.plot_surface(x, y, z, color='g')
+    # ax4.set_title('Molniya Orbital Motion 3D')
+    # ax4.set_xlabel('[km]')
+    # ax4.set_ylabel('[km]')
+    # ax4.set_zlabel('[km]')
+    # set_axes_equal(ax4)
+    #
+    # plt.savefig('q3c_plane_change.png')
     # plt.show()
+
+    # Question 3.d
+    f = orbital_motion
+    t0 = 0
+    tf = 5*700*60
+    tol = 1e-7
+
+    fig = plt.figure(figsize=[12, 5])
+    ax1 = fig.add_subplot(1, 2, 1)
+    earth = plt.Circle((0, 0), 6378, color='g')
+    ax1.add_patch(earth)
+    ax1.axis('equal')
+    ax1.set_title('Molniya Orbital Motion')
+    ax1.set_xlabel('[km]')
+    ax1.set_ylabel('[km]')
+    plt.ticklabel_format(axis="both", style="sci", scilimits=(0, 0))
+
+    ax2 = fig.add_subplot(1, 2, 2)
+    #ax2.axis('equal')
+    ax2.set_title('Molniya Orbital Motion')
+    ax2.set_xlabel('Pergigee Velocity [km/s]')
+    ax2.set_ylabel('Apogee Altitude [km]')
+    plt.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
+
+    vels = np.arange(8.0, 10.5 + 0.1, 0.1)
+    alts = np.zeros_like(vels)
+    for i in range(len(vels)):
+        r0 = [500 + 6378, 0, 0, 0, vels[i], 0, 2000]
+        t, r, steps = rk4_adaptive(f, r0, t0, tf, tol)
+        result = np.min(r[0])
+        alts[i] = np.abs(result) - 6378
+        ax1.plot(r[0], r[1])
+        ax1.scatter(result, 0)
+
+    ppot, pcov = curve_fit(fit_func, vels, alts)
+    print(ppot)
+    ax2.plot(vels, fit_func(vels, *ppot), '--k', label='Fit solution')
+    ax2.plot(vels, alts, 'b', label='Adaptive step solution')
+    plt.savefig('q3d_pergiapo.png')
+    plt.show()
