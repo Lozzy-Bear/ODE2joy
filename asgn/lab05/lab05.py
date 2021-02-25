@@ -97,14 +97,14 @@ def crystalline(r, t):
 
 
 def crystalline_atomic(r, t):
-    k = 1
+    k = 10
     m = 1
-    a = 10
+    a = 1000
     n = int(len(r)/2)
     x = np.zeros(n+2)
     x[1:-1] = r[:n]
     fx = r[n:]
-    fv = k / m * (x[2:] + x[:-2] - 2*x[1:-1]) + a * (x[2:] - x[1:-1])**5 + a * (x[:-2] - x[1:-1])**5
+    fv = k / m * (x[2:] + x[:-2] - 2*x[1:-1]) + a / m * (x[2:] - x[1:-1])**5 + a / m * (x[:-2] - x[1:-1])**5
 
     return np.concatenate((fx, fv))
 
@@ -118,6 +118,38 @@ def total_energy(k, m, x, v):
         potential[i, :] = 0.5 * k * (x[i+1, :] - x[i, :])**2
     potential = np.sum(potential, axis=0)
     return kinetic + potential
+
+
+def plot_it(t, r, n, w0, name):
+    plt.figure(figsize=[10, 12])
+    plt.subplot(311)
+    plt.plot(t, r[0, :])
+    plt.xlabel('Time [s]')
+    plt.ylabel('Displacement [m]')
+    
+    plt.subplot(312)
+    plt.imshow(r[:n, :], cmap="gray", origin="lower", aspect='auto', extent=(0, len(t)*dt, 0, n))
+    plt.xlabel("Time")
+    plt.ylabel("Mass Number")
+    
+    fft = np.fft.fft(r[0])
+    freq = np.fft.fftfreq(len(r[0]), dt)
+    fft = np.fft.fftshift(fft)
+    freq = np.fft.fftshift(freq)
+    fft = np.abs(fft)
+    freq = freq * 2 * np.pi
+    plt.subplot(313)
+    plt.plot(freq, fft, 'm')
+    top = np.max(np.abs(fft))
+    for l in range(0, masses+1, 1):
+        w = 2*w0*np.sin(l*np.pi/2/(masses+1))
+        plt.plot([w, w], [0, top], 'k')
+    plt.xlim(0, 2)
+    plt.xlabel('Frequency, ω [rad/s]')
+    plt.ylabel('Amplitude')
+    plt.tight_layout()
+    plt.savefig(name)
+    return
 
 
 if __name__ == '__main__':
@@ -136,8 +168,8 @@ if __name__ == '__main__':
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
     # Question 1
-    # r, t = leapfrog(orbital_motion, [500+6378, 0, 0, 0, 10, 0, 2000], 0, 700*60, 1)
-    # r2, t2 = leapfrog(orbital_motion, [2000+6378, 0, 0, 0, 6.89755, 0, 2000], 0, 130*60, 1)
+    # t, r = leapfrog(orbital_motion, [500+6378, 0, 0, 0, 10, 0, 2000], 0, 700*60, 1)
+    # t2, r2 = leapfrog(orbital_motion, [2000+6378, 0, 0, 0, 6.89755, 0, 2000], 0, 130*60, 1)
     # fig = plt.figure(figsize=[6, 5])
     # ax = fig.add_subplot(1, 1, 1)
     # earth = plt.Circle((0, 0), 6378, color='g')
@@ -158,149 +190,74 @@ if __name__ == '__main__':
 
     # Question 2
     # masses = 100
-    # x0 = np.zeros(masses)
-    # v0 = np.zeros_like(x0)
-    # r0 = np.concatenate((x0, v0))
-    # r0[0] = 0.5
     # t0 = 0
     # tf = 1000
     # dt = 0.01
     # k = 1
     # m = 1
-    # r, t = leapfrog(crystalline, r0, t0, tf, dt)
-    # plt.figure()
-    # plt.plot(t, r[0, :])
-    # plt.figure()
-    # plt.imshow(r[:masses, :], cmap="gray", origin="lower", aspect='auto', extent=(0, len(t)*dt, 0, masses))
-    # plt.xlabel("Time")
-    # plt.ylabel("Mass Number")
-    # plt.savefig('q2a_grays.png')
-    #
-    # fft = np.fft.fft(r[0])
-    # #fft = np.fft.fftshift(fft)
-    # freq = np.fft.fftfreq(len(r[0]), dt)
-    # plt.figure()
-    # plt.plot(freq, np.real(fft))
-    # for l in range(masses):
-    #     plt.scatter(2*np.sqrt(k/m)*np.sin(l*np.pi/2/(masses+1)), 0)
-    # plt.show()
-
-    # Question 2b
-    # masses = 100
+    # # Part A
+    # x0 = np.zeros(masses)
+    # v0 = np.zeros_like(x0)
+    # r0 = np.concatenate((x0, v0))
+    # r0[0] = 0.5
+    # t, r = leapfrog(crystalline, r0, t0, tf, dt)
+    # plot_it(t, r, masses, np.sqrt(k/m), 'q2a.png')
+    # # Part B
     # x0 = np.random.uniform(-0.2, 0.2, masses)
     # v0 = np.zeros_like(x0)
     # r0 = np.concatenate((x0, v0))
-    # t0 = 0
-    # tf = 1000
-    # dt = 0.01
-    # print(len(r0))
-    # r, t = leapfrog(crystalline, r0, t0, tf, dt)
-    # plt.figure()
-    # plt.plot(t, r[0, :])
-    # plt.figure()
-    # plt.imshow(r[:masses, :], cmap="gray", origin="lower", aspect='auto', extent=(0, len(t)*dt, 0, masses))
-    # plt.xlabel("Time")
-    # plt.ylabel("Mass Number")
-    # plt.savefig('q2b_grays.png')
-    # plt.show()
-
-    # Question 2c
-    # masses = 100
+    # t, r = leapfrog(crystalline, r0, t0, tf, dt)
+    # plot_it(t, r, masses, np.sqrt(k/m), 'q2b.png')
+    # # Part C
     # x0 = np.ones(masses) * 0.2
     # v0 = np.zeros_like(x0)
     # r0 = np.concatenate((x0, v0))
-    # t0 = 0
-    # tf = 1000
-    # dt = 0.01
-    # print(len(r0))
-    # r, t = leapfrog(crystalline, r0, t0, tf, dt)
-    # plt.figure()
-    # plt.plot(t, r[0, :])
-    # plt.figure()
-    # plt.imshow(r[:masses, :], cmap="gray", origin="lower", aspect='auto', extent=(0, len(t)*dt, 0, masses))
-    # plt.xlabel("Time")
-    # plt.ylabel("Mass Number")
-    # plt.savefig('q2c_grays.png')
-    # plt.show()
-
-    # Question 2d + e
-    # masses = 100
+    # t, r = leapfrog(crystalline, r0, t0, tf, dt)
+    # plot_it(t, r, masses, np.sqrt(k/m), 'q2c.png')
+    # # Part D
     # x0 = np.zeros(masses)
     # v0 = np.ones(masses)*0.1
     # r0 = np.concatenate((x0, v0))
-    # t0 = 0
-    # tf = 1000
-    # dt = 0.01
-    # k = 1
-    # m = 1
-    # r, t = leapfrog(crystalline, r0, t0, tf, dt)
-    # plt.figure()
-    # plt.plot(t, r[0, :])
-    # plt.figure()
-    # plt.imshow(r[:masses, :], cmap="gray", origin="lower", aspect='auto', extent=(0, len(t)*dt, 0, masses))
-    # plt.xlabel("Time")
-    # plt.ylabel("Mass Number")
-    # plt.savefig('q2d_grays.png')
-    #
-    # fft = np.fft.fft(r[0])
-    # fft = np.fft.fftshift(fft)
-    # plt.figure()
-    # plt.plot(fft)
-    # for l in range(masses):
-    #     plt.scatter(2*np.sqrt(k/m)*np.sin(l*np.pi/2/(masses+1)), 0)
-    # plt.show()
+    # t, r = leapfrog(crystalline, r0, t0, tf, dt)
+    # plot_it(t, r, masses, np.sqrt(k/m), 'q2d.png')
 
     # Question 2f
-    # masses = 100
-    # x0 = np.zeros(masses)
-    # v0 = np.zeros_like(x0)
-    # r0 = np.concatenate((x0, v0))
-    # r0[0] = 0.5
-    # t0 = 0
-    # tf = 10_000
-    # dt = 0.1
-    # k = 1
-    # m = 1
-    # tl, rl = leapfrog(crystalline, r0, t0, tf, dt)
-    # tr, rr = rk4(crystalline, r0, t0, tf, dt)
-    # el = total_energy(k, m, rl[:masses, :], rl[masses:, :])
-    # er = total_energy(k, m, rr[:masses, :], rr[masses:, :])
-    # plt.figure()
-    # plt.plot(tl, el, '--m', label='Leapfrog Method')
-    # plt.plot(tr, er, '--c', label='Runge-Kutta 4 Method')
-    # plt.xlabel('Time [s]')
-    # plt.ylabel('Energy [J]')
-    # plt.title('Energy Conserved')
-    # plt.legend(loc='best')
-    # plt.savefig('q2f_energy.png')
-    # plt.show()
-
-    # Question 2g
     masses = 100
     x0 = np.zeros(masses)
     v0 = np.zeros_like(x0)
     r0 = np.concatenate((x0, v0))
     r0[0] = 0.5
     t0 = 0
-    tf = 1000
-    dt = 0.01
+    tf = 10_000
+    dt = 0.1
     k = 1
     m = 1
-    t, r = leapfrog(crystalline_atomic, r0, t0, tf, dt)
+    tl, rl = leapfrog(crystalline, r0, t0, tf, dt)
+    tr, rr = rk4(crystalline, r0, t0, tf, dt)
+    el = total_energy(k, m, rl[:masses, :], rl[masses:, :])
+    er = total_energy(k, m, rr[:masses, :], rr[masses:, :])
     plt.figure()
-    plt.plot(t, r[0, :])
-    plt.figure()
-    plt.imshow(r[:masses, :], cmap="gray", origin="lower", aspect='auto', extent=(0, len(t)*dt, 0, masses))
-    plt.xlabel("Time")
-    plt.ylabel("Mass Number")
-    plt.savefig('q2g_atomic.png')
+    plt.plot(tl, el, '--m', label='Leapfrog Method')
+    plt.plot(tr, er, '--c', label='Runge-Kutta 4 Method')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Energy [J]')
+    plt.title('Energy Conserved')
+    plt.legend(loc='best')
+    plt.savefig('q2f_energy.png')
+    plt.show()
 
-    fft = np.fft.fft(r[0])
-    freq = np.fft.fftfreq(len(r[0]), dt)
-    plt.figure()
-    plt.plot(freq * 2 * np.pi, np.abs(fft))
-    top = np.max(np.abs(fft))
-    for l in range(0, masses+1, 1):
-        w = 2*np.sqrt(k/m)*np.sin(l*np.pi/2/(masses+1))
-        plt.plot([w, w], [0, top], c='k')
+    # Question 2g
+    # masses = 100
+    # x0 = np.zeros(masses)
+    # v0 = np.zeros_like(x0)
+    # r0 = np.concatenate((x0, v0))
+    # r0[0] = 0.5
+    # t0 = 0
+    # tf = 1000
+    # dt = 0.01
+    # k = 10
+    # m = 1
+    # t, r = leapfrog(crystalline_atomic, r0, t0, tf, dt)
+    # plot_it(t, r, masses, np.sqrt(k/m), 'q2g_k10a1000.png')
+
     plt.show()
