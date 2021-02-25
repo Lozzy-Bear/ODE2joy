@@ -296,10 +296,11 @@ if __name__ == '__main__':
     plt.savefig('q2g_atomic.png')
 
     fft = np.fft.fft(r[0])
-    #fft = np.fft.fftshift(fft)
     freq = np.fft.fftfreq(len(r[0]), dt)
     plt.figure()
-    plt.plot(freq, np.real(fft))
-    for l in range(masses):
-        plt.scatter(2*np.sqrt(k/m)*np.sin(l*np.pi/2/(masses+1)), 0)
+    plt.plot(freq * 2 * np.pi, np.abs(fft))
+    top = np.max(np.abs(fft))
+    for l in range(0, masses+1, 1):
+        w = 2*np.sqrt(k/m)*np.sin(l*np.pi/2/(masses+1))
+        plt.plot([w, w], [0, top], c='k')
     plt.show()
