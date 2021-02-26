@@ -74,6 +74,29 @@ def rk4(f, r0, t0, tf, dt):
 
 
 def leapfrog(f, r0, t0, tf, dt):
+    """
+    Leapfrog method
+
+    Parameters
+    ----------
+    f : function np
+        a function or array of functions handle that defines the ODE
+    r0 : float np.array
+        an array containing the initial condition of each dependent variable
+    t0 : float
+        the initial time
+    tf : float
+        the final time
+    dt : float
+        the time step
+
+    Returns
+    -------
+    t : float np.array
+        an array of time values corresponding to the solution
+    r : float np.array
+        a two dimensional array containing the solution for each variable at each time step
+    """
     t = np.arange(t0, tf, dt)
     r = np.zeros((len(r0), len(t)))
     m = np.zeros_like(r)  # midpoint steps tracking
