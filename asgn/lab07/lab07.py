@@ -65,11 +65,11 @@ def jacobian(f, x, p):
 
 def test_system(x):
     f1 = np.exp(-1*np.exp(x[0]+x[1])) - x[1]*(1+x[0]**2)
-    f2 = x[0]*np.cos(x[1]) - x[1]*np.sin(x[0]) + 0.5
+    f2 = x[0]*np.cos(x[1]) + x[1]*np.sin(x[0]) - 0.5
     return np.array([f1, f2])
 
 
-def schrodinger(r, x):
+def schrodinger(r, x=0):
     en = 14e3 * const.electron_volt
     m = const.electron_mass
     kpsi = r[1]
@@ -146,7 +146,12 @@ if __name__ == '__main__':
     #print(newton_mv(test_system, np.array([np.pi, np.pi]), 1e-4, 1e-10))
 
     # Question 3
-    x, r = rk4(schrodinger, np.array([0, 1]), 0, 1e-11, 1e-11/1000)
-    plt.figure()
-    plt.plot(x, r[0])
-    plt.show()
+    #x, r = rk4(schrodinger, np.array([0, 1]), 0, 1e-11, 1e-11/1000)
+    #plt.figure()
+    #plt.plot(x, r[0])
+    #plt.show()
+
+    # Question 4
+    x, r = rk4(schrodinger, np.array([0, 2.0]), 0, 1e-11, 1e-11/1000)
+    roots = newton_mv(schrodinger, np.array([r[0, -1], r[1, -1]]), 0.01*const.electron_volt, 1e-10)
+    print(roots)
