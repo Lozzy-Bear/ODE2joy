@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.linalg as la
+import scipy.constants as const
 
 
 def diode_bridge(v):
@@ -68,9 +69,26 @@ def test_system(x):
     return np.array([f1, f2])
 
 
-def schrodinger():
+def schrodinger(r, x):
+    en = 14e3 * const.electron_volt
+    m = const.electron_mass
+    kpsi = r[1]
+    kphi = 2 * m / const.hbar**2 * (potential_well(x) - en) * r[0]
+    return np.array([kpsi, kphi])
 
-    return
+
+def potential_well(x):
+    b1 = 0
+    b2 = 1e-11
+    if b1 <= x <= b2:
+        v = 0
+    else:
+        v = np.inf
+    return v
+
+
+def energies(n, m, l):
+    return n**2 * np.pi**2 * const.hbar**2 / 2 / m / l**2
 
 
 def rk4(f, r0, t0, tf, dt):
@@ -125,6 +143,10 @@ if __name__ == '__main__':
     # print(jacobian(func, x, 1e-10))
 
     # Question 2
-    print(newton_mv(test_system, np.array([np.pi, np.pi]), 1e-4, 1e-10))
+    #print(newton_mv(test_system, np.array([np.pi, np.pi]), 1e-4, 1e-10))
 
     # Question 3
+    x, r = rk4(schrodinger, np.array([0, 1]), 0, 1e-11, 1e-11/1000)
+    plt.figure()
+    plt.plot(x, r[0])
+    plt.show()
