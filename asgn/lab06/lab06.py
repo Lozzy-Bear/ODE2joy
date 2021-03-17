@@ -3,20 +3,6 @@ import matplotlib.pyplot as plt
 
 
 def magnetization_relaxation(const, temp, target):
-    """
-     m = u * tanh(c * m / T)
-
-
-    Parameters
-    ----------
-    temp
-    const
-    target
-
-    Returns
-    -------
-
-    """
     u = 700
     m = np.zeros(3)
     err = 1e16
