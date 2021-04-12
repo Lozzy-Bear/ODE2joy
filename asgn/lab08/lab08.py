@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as const
 
+
 def qr_decomposition(a):
     """
     Gram-Schmidt QR Decomposition method
